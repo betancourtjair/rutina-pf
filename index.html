@@ -224,16 +224,15 @@ const EQUIP = [
   {cat:"Máquinas de tren superior", items:[
     ["chest_press","Press de pecho (máquina)"],["pec_fly","Pec fly / deltoide posterior"],["shoulder_press","Press de hombro (máquina)"],
     ["lat_pull","Jalón al pecho (lat pulldown)"],["row","Remo sentado (máquina)"],["assist","Dominadas y fondos asistidos"],
-    ["bicep_curl","Curl de bíceps (máquina)"],["tricep_ext","Extensión de tríceps (máquina)"],["lat_raise","Elevación lateral (máquina)","opt"]]},
+    ["bicep_curl","Curl de bíceps (máquina)"],["tricep_ext","Extensión de tríceps (máquina)"]]},
   {cat:"Máquinas de pierna", items:[
-    ["leg_press","Prensa de piernas"],["leg_ext","Extensión de pierna"],["seated_curl","Curl femoral sentado"],
-    ["lying_curl","Curl femoral acostado","opt"],["abductor","Abductor"],["adductor","Aductor"],["calf","Pantorrilla (máquina)"],
+    ["leg_press","Prensa de piernas"],["leg_ext","Extensión de pierna"],
+    ["lying_curl","Curl femoral acostado"],["abductor","Abductor"],["calf","Pantorrilla (máquina)"],
     ["glute","Glúteo / patada (máquina)","opt"],["hack","Sentadilla hack","opt"]]},
   {cat:"Abdomen y zona media", items:[
-    ["ab_crunch","Crunch abdominal (máquina)"],["rotary","Torso rotatorio"],["back_ext","Extensión lumbar (máquina)"],
     ["hyper","Banco de hiperextensiones"],["captain","Silla romana (elevación de piernas)"]]},
   {cat:"Peso libre, Smith y poleas", items:[
-    ["smith","Máquina Smith"],["cable","Poleas / cruce de poleas"],["db","Mancuernas"],["bench","Bancos planos e inclinables"],["fixed_bar","Barras de peso fijo"]]},
+    ["smith","Máquina Smith"],["cable","Poleas / cruce de poleas"],["db","Mancuernas"],["bench","Bancos planos e inclinables"]]},
   {cat:"Cardio", items:[
     ["treadmill","Caminadora"],["elliptical","Elíptica"],["bike","Bicicleta vertical / reclinada"],["stair","Escaladora"],["arc","Arc Trainer"]]}
 ];
@@ -280,13 +279,11 @@ const EX = [
  ["Remo invertido en Smith","espalda",["smith"],1,"Barra a la altura de la cadera, cuerpo recto como plancha."],
  ["Pullover en polea alta","espalda",["cable"],0,"Brazos casi rectos, baja la barra hasta los muslos activando dorsales."],
  ["Hiperextensiones","espalda",["hyper"],0,"Sube hasta alinear el cuerpo, sin arquear de más la zona lumbar."],
- ["Extensión lumbar en máquina","espalda",["back_ext"],0,"Movimiento lento y corto. Peso ligero."],
  // Hombro
  ["Press de hombro en máquina","hombro",["shoulder_press"],1,"Manijas a la altura de los hombros al iniciar. No bloquees codos arriba."],
  ["Press militar en Smith","hombro",["smith","bench"],1,"Banco en vertical. La barra baja a la barbilla."],
  ["Press con mancuernas sentado","hombro",["db","bench"],1,"Banco a 90°. Palmas al frente, sube sin chocar las mancuernas."],
  ["Elevaciones laterales con mancuernas","hombro",["db"],0,"Sube hasta la altura del hombro con el codo apenas flexionado. Peso ligero."],
- ["Elevación lateral en máquina","hombro",["lat_raise"],0,"Alinea el hombro con el eje de la máquina."],
  ["Deltoide posterior en pec fly","hombro",["pec_fly"],0,"Siéntate de frente al respaldo y abre los brazos hacia atrás."],
  ["Face pull en polea","hombro",["cable"],0,"Cuerda a la altura de la cara; jala separando las manos hacia las orejas."],
  ["Elevación lateral en polea","hombro",["cable"],0,"Polea baja, cruza el cable por delante del cuerpo."],
@@ -296,7 +293,6 @@ const EX = [
  ["Curl martillo","biceps",["db"],0,"Palmas viéndose entre sí; trabaja braquial y antebrazo."],
  ["Curl en polea con barra","biceps",["cable"],0,"Polea baja, codos fijos a los costados."],
  ["Curl inclinado con mancuernas","biceps",["db","bench"],0,"Banco a 45°, brazos colgando detrás del torso."],
- ["Curl con barra de peso fijo","biceps",["fixed_bar"],0,"Agarre al ancho de hombros, sin impulsarte con la espalda."],
  // Tríceps
  ["Extensión de tríceps en máquina","triceps",["tricep_ext"],0,"Codos alineados con el eje de la máquina."],
  ["Jalón de tríceps con cuerda","triceps",["cable"],0,"Abre la cuerda al final del movimiento. Codos pegados."],
@@ -312,12 +308,10 @@ const EX = [
  ["Zancadas con mancuernas","cuad",["db"],1,"Paso largo, rodilla trasera casi al piso."],
  ["Sentadilla búlgara","cuad",["db","bench"],1,"Pie trasero sobre el banco. Torso erguido."],
  ["Sentadilla goblet","cuad",["db"],1,"Sostén una mancuerna en el pecho y baja con el torso recto."],
- ["Aductor en máquina","cuad",["adductor"],0,"Cierra las piernas controlando la vuelta."],
  // Femoral y glúteo
  ["Peso muerto rumano en Smith","fem",["smith"],1,"Rodillas semiflexionadas, lleva la cadera hacia atrás con la espalda neutra."],
  ["Peso muerto rumano con mancuernas","fem",["db"],1,"Mancuernas pegadas a los muslos al bajar."],
  ["Hip thrust en Smith","fem",["smith","bench"],1,"Espalda alta en el banco, protege la cadera con un cojín. Aprieta glúteo arriba."],
- ["Curl femoral sentado","fem",["seated_curl"],0,"Rodilla alineada con el eje, cojín sobre los muslos ajustado."],
  ["Curl femoral acostado","fem",["lying_curl"],0,"Cadera pegada al banco durante todo el movimiento."],
  ["Patada de glúteo en máquina","fem",["glute"],0,"Empuja con el talón, sin arquear la espalda baja."],
  ["Abductor en máquina","fem",["abductor"],0,"Inclínate un poco al frente para enfocar glúteo medio."],
@@ -329,10 +323,8 @@ const EX = [
  ["Elevación de talones en Smith","pant",["smith"],0,"Puntas sobre un disco o step para mayor rango."],
  ["Pantorrilla de pie con mancuernas","pant",["db"],0,"Una pierna a la vez, sujétate de algo para equilibrio."],
  // Abdomen
- ["Crunch en máquina","abs",["ab_crunch"],0,"Exhala al cerrar; mueve el torso, no los brazos."],
  ["Elevación de piernas en silla romana","abs",["captain"],0,"Sube las rodillas al pecho sin balancearte."],
  ["Crunch en polea arrodillado","abs",["cable"],0,"Cuerda junto a la cabeza, flexiona el torso hacia el piso."],
- ["Torso rotatorio","abs",["rotary"],0,"Gira desde la cintura, lento y con poco peso."],
  ["Pallof press en polea","abs",["cable"],0,"De lado a la polea, empuja al frente sin dejar que te gire."],
  ["Leñador en polea","abs",["cable"],0,"De alto a bajo en diagonal, girando el torso."],
  // Cardio
