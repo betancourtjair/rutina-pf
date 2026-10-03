@@ -427,17 +427,44 @@ function swap(idx,isCardio){
 /* ===== Fotos de equipo =====
    Prioridad: 1) foto tomada en este teléfono (IndexedDB)  2) fotos/<id>.jpg en el repositorio  3) marcador */
 const CAM = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>`;
-function thumb(id,n){return `<button class="thumb" data-photo="${id}" aria-label="Ver foto: ${esc(EQ_NAME[id])}"><span class="ph">${CAM}<span>Agregar foto</span></span>${n!=null?`<span class="badge">${n}</span>`:""}</button>`}
+function thumb(id,n){return `<button class="thumb" data-photo="${id}" aria-label="Ver foto: ${esc(EQ_NAME[id])}"><span class="ph">${CAM}<span>Sin foto</span></span>${n!=null?`<span class="badge">${n}</span>`:""}</button>`}
 let dbP=null;
 function idb(){if(!dbP)dbP=new Promise((res,rej)=>{try{const r=indexedDB.open("pfr",1);r.onupgradeneeded=()=>r.result.createObjectStore("photos");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}});return dbP}
 async function idbGet(id){try{const db=await idb();return await new Promise(r=>{const q=db.transaction("photos").objectStore("photos").get(id);q.onsuccess=()=>r(q.result||null);q.onerror=()=>r(null)})}catch(e){return null}}
 async function idbSet(id,blob){try{const db=await idb();await new Promise((r,j)=>{const t=db.transaction("photos","readwrite");blob?t.objectStore("photos").put(blob,id):t.objectStore("photos").delete(id);t.oncomplete=r;t.onerror=()=>j(t.error)});return true}catch(e){return false}}
+// Fotos de referencia (Wikimedia Commons, licencias libres). No son de Planet Fitness: sirven para reconocer el tipo de máquina.
+const WM="https://upload.wikimedia.org/wikipedia/commons/";
+const REF={
+ abductor:["thumb/f/f9/Hip_abductor_machine.jpg/960px-Hip_abductor_machine.jpg","Teemeah","CC BY-SA 4.0"],
+ arc:["thumb/4/44/Arc_Trainer_-_02.jpg/960px-Arc_Trainer_-_02.jpg","0x0077BE","CC0"],
+ bicep_curl:["thumb/b/bf/Bicep_curl_machine.jpg/960px-Bicep_curl_machine.jpg","Aliva Sahoo","CC BY-SA 4.0"],
+ cable:["thumb/7/72/Multifunctional_cable_and_row_machines_in_a_gym.jpg/960px-Multifunctional_cable_and_row_machines_in_a_gym.jpg","San Francisco Foghorn","CC BY 2.0"],
+ calf:["e/e7/SeatedCalfRaiseMachineExercise.JPG","George Stepanek","CC BY-SA 3.0"],
+ chest_press:["thumb/e/e5/Chest_Incline.jpg/960px-Chest_Incline.jpg","Aliva Sahoo","CC BY-SA 4.0"],
+ db:["thumb/d/d0/Marines%27_voices_echo%2C_prompt_new_gym_hours_150927-M-AI083-067.jpg/960px-Marines%27_voices_echo%2C_prompt_new_gym_hours_150927-M-AI083-067.jpg","Lance Cpl. Jason Jimenez","Dominio público"],
+ elliptical:["thumb/d/da/Elliptical_machine.jpg/960px-Elliptical_machine.jpg","Cpengr","CC BY-SA 3.0"],
+ hack:["d/dd/HackSquatMachineExercise.JPG","George Stepanek","CC BY-SA 3.0"],
+ hyper:["thumb/9/9d/Hyper_bench.jpg/960px-Hyper_bench.jpg","Teemeah","CC BY-SA 4.0"],
+ lat_pull:["thumb/2/2a/Diverging_Lat_Pulldown_Machine.jpg/960px-Diverging_Lat_Pulldown_Machine.jpg","Teddyhtsai","CC0"],
+ leg_ext:["3/36/LegExtensionMachineExercise.JPG","George Stepanek","CC BY-SA 3.0"],
+ leg_press:["5/57/Leg_press_%28cropped%2C_flipped%29.jpg","SlimVirgin","CC BY-SA 3.0"],
+ lying_curl:["c/c6/LyingLegCurlMachineExercise.JPG","George Stepanek","CC BY-SA 3.0"],
+ pec_fly:["thumb/c/cf/Pec_deck_Fly.jpg/960px-Pec_deck_Fly.jpg","Aliva Sahoo","CC BY-SA 4.0"],
+ row:["thumb/0/0a/Woman_using_a_seated_cable_row_machine_at_the_gym.jpg/960px-Woman_using_a_seated_cable_row_machine_at_the_gym.jpg","Miguel Angel Omaña Rojas","CC0"],
+ shoulder_press:["1/1f/ShoulderPressMachineExercise.JPG","George Stepanek","CC BY-SA 3.0"],
+ smith:["thumb/7/74/Smith_machine.webp/960px-Smith_machine.webp","Wikideas1","CC0"],
+ treadmill:["thumb/6/62/Treadmill-gym.jpg/960px-Treadmill-gym.jpg","GhoziSeptiandri","CC BY-SA 4.0"]
+};
+// búsqueda de imágenes para ver más ejemplos de cada equipo
+const SEARCH={chest_press:"seated chest press machine",pec_fly:"pec deck fly machine",shoulder_press:"shoulder press machine",lat_pull:"lat pulldown machine",row:"seated row machine",assist:"assisted pull up dip machine",bicep_curl:"bicep curl machine",tricep_ext:"triceps extension machine",lat_raise:"lateral raise machine",leg_press:"leg press machine",leg_ext:"leg extension machine",seated_curl:"seated leg curl machine",lying_curl:"lying leg curl machine",abductor:"hip abductor machine",adductor:"hip adductor machine",calf:"calf raise machine",glute:"glute kickback machine",hack:"hack squat machine",ab_crunch:"ab crunch machine",rotary:"rotary torso machine",back_ext:"back extension machine",hyper:"hyperextension bench",captain:"captain's chair knee raise station",smith:"smith machine",cable:"cable crossover machine",db:"dumbbell rack",bench:"adjustable weight bench",fixed_bar:"fixed weight barbell rack",treadmill:"treadmill gym",elliptical:"elliptical machine",bike:"recumbent and upright exercise bike",stair:"stairmaster stepmill",arc:"arc trainer"};
+const searchUrl=id=>"https://www.google.com/search?tbm=isch&q="+encodeURIComponent((SEARCH[id]||EQ_NAME[id])+" planet fitness");
 const repoCache={}, localCache={};
 function repoPhoto(id){if(!(id in repoCache))repoCache[id]=new Promise(r=>{const im=new Image();im.onload=()=>r(im.src);im.onerror=()=>r(null);im.src=`fotos/${id}.jpg`});return repoCache[id]}
 async function photoFor(id){
   if(!(id in localCache)){const b=await idbGet(id);localCache[id]=b?URL.createObjectURL(b):null}
   if(localCache[id])return{url:localCache[id],src:"local"};
-  const u=await repoPhoto(id);return u?{url:u,src:"repo"}:null;
+  const u=await repoPhoto(id);if(u)return{url:u,src:"repo"};
+  return REF[id]?{url:WM+REF[id][0],src:"ref",by:REF[id][1],lic:REF[id][2]}:null;
 }
 function hydrate(root){
   root.querySelectorAll("[data-photo]").forEach(async el=>{
@@ -456,7 +483,7 @@ async function openSheet(id){
   sheetId=id;$("#sh-title").textContent=EQ_NAME[id];$("#sheet").hidden=false;
   const p=await photoFor(id);
   $("#sh-photo").innerHTML=p?`<img src="${p.url}" alt="${esc(EQ_NAME[id])}">`:`<div class="ph" style="display:grid;justify-items:center;gap:6px;padding:16px;text-align:center">${CAM.replace("<svg","<svg width=\"40\" height=\"40\"")}<span>Aún no hay foto de este equipo.<br>Tómala en tu club para reconocerlo rápido.</span></div>`;
-  $("#sh-src").textContent=p?(p.src==="local"?"Foto tomada en este teléfono.":"Foto de los clubes Planet Fitness México."):`Archivo en el repositorio: fotos/${id}.jpg`;
+  $("#sh-src").innerHTML=(p?(p.src==="local"?"Foto tomada en este teléfono.":p.src==="repo"?"Foto de los clubes.":`Foto de referencia de otro gimnasio (${esc(p.by)}, ${esc(p.lic)}, Wikimedia Commons). En tu club puede verse distinta.`):"Aún no hay foto de referencia para este equipo.")+` <a href="${searchUrl(id)}" target="_blank" rel="noopener" style="color:var(--accent);font-weight:700">Ver más fotos de esta máquina</a>`;
   $("#sh-del").hidden=!(p&&p.src==="local");
 }
 function closeSheet(){$("#sheet").hidden=true;sheetId=null;$("#sh-file").value=""}
