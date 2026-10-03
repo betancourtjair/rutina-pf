@@ -70,6 +70,7 @@ h2{font-size:1.5rem;font-weight:700;text-transform:uppercase}
 .stat b{display:block;font-family:var(--display);font-size:1.6rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
 .stat span{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
 .blockhead{display:flex;align-items:baseline;justify-content:space-between;margin-top:8px}
+.section>*,.ex>*{min-width:0}
 .ex{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:grid;gap:10px}
 .ex.done{border-color:color-mix(in srgb,var(--ok) 55%,var(--line))}
 .ex-top{display:flex;gap:12px;align-items:flex-start}
@@ -86,6 +87,23 @@ h2{font-size:1.5rem;font-weight:700;text-transform:uppercase}
 .set{width:44px;height:44px;border-radius:50%;border:2px solid var(--line);font-weight:700;font-variant-numeric:tabular-nums;display:grid;place-items:center}
 .set[aria-pressed="true"]{background:var(--ok);border-color:var(--ok);color:var(--surface)}
 .ex-actions{display:flex;gap:8px;justify-content:space-between;align-items:center}
+
+/* fotos de equipo */
+.thumb{position:relative;flex:0 0 76px;width:76px;height:76px;border-radius:12px;overflow:hidden;background:var(--surface2);display:grid;place-items:center;color:var(--muted)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .ph{display:grid;justify-items:center;gap:2px;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;text-align:center;line-height:1.1;padding:4px}
+.thumb .ph svg{width:22px;height:22px}
+.thumb .badge{position:absolute;left:4px;top:4px;min-width:24px;height:24px;padding:0 6px;border-radius:7px;background:var(--ink);color:var(--bg);font-family:var(--display);font-weight:800;font-size:1rem;display:grid;place-items:center;font-variant-numeric:tabular-nums}
+.ex.done .thumb .badge{background:var(--ok);color:var(--surface)}
+.eq .thumb{flex-basis:52px;width:52px;height:52px;border-radius:10px}
+.eq .thumb .ph span{display:none}
+.sheet{position:fixed;inset:0;z-index:20;background:rgb(0 0 0 / .6);display:flex;align-items:flex-end;justify-content:center}
+.sheet-in{background:var(--surface);width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px));display:grid;gap:12px;max-height:92%;overflow:auto}
+.sheet-photo{width:100%;aspect-ratio:4/3;max-width:100%;border-radius:14px;background:var(--surface2);overflow:hidden;display:grid;place-items:center;color:var(--muted)}
+.sheet-photo img{width:100%;height:100%;object-fit:contain;background:#000}
+.btn{padding:12px 16px;border-radius:12px;font-weight:700;text-align:center;display:block}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.soft{background:var(--surface2)}
 
 /* temporizador */
 .timer{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;padding:0 16px;pointer-events:none;z-index:5}
@@ -166,7 +184,7 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
     <header class="hero">
       <div class="eyebrow">Mi club</div>
       <h1>Equipo disponible</h1>
-      <p class="muted" style="margin:0">Apaga lo que no haya en tu club y la rutina solo usará lo que sí tienes.</p>
+      <p class="muted" style="margin:0">Apaga lo que no haya en tu club y la rutina solo usará lo que sí tienes. Toca la foto de un equipo para verla o tomar una en tu club.</p>
     </header>
     <div class="note">No todos los clubes tienen exactamente el mismo equipo. Lo marcado como <b>“algunos clubes”</b> viene apagado si no es estándar; enciéndelo si lo ves en tu club. Planet Fitness no tiene racks de sentadilla ni barras olímpicas: aquí se usa Smith, máquinas, poleas y mancuernas.</div>
     <div id="club" class="section"></div>
@@ -180,6 +198,17 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
     <b id="t-num">1:00</b><span>Descanso</span>
     <button id="t-plus">+15 s</button>
     <button id="t-skip">Listo</button>
+  </div>
+</div>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="sh-title">
+    <div class="row between"><h2 id="sh-title">Equipo</h2><button class="ghost" id="sh-close">Cerrar</button></div>
+    <div class="sheet-photo" id="sh-photo"></div>
+    <p class="muted" id="sh-src" style="margin:0;font-size:.82rem"></p>
+    <label class="btn primary" for="sh-file">Tomar o elegir foto</label>
+    <input type="file" id="sh-file" accept="image/*" hidden>
+    <button class="btn soft" id="sh-del" hidden>Quitar mi foto</button>
   </div>
 </div>
 
@@ -395,6 +424,53 @@ function swap(idx,isCardio){
   store.set("routine",routine); renderRoutine();
 }
 
+/* ===== Fotos de equipo =====
+   Prioridad: 1) foto tomada en este teléfono (IndexedDB)  2) fotos/<id>.jpg en el repositorio  3) marcador */
+const CAM = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>`;
+function thumb(id,n){return `<button class="thumb" data-photo="${id}" aria-label="Ver foto: ${esc(EQ_NAME[id])}"><span class="ph">${CAM}<span>Agregar foto</span></span>${n!=null?`<span class="badge">${n}</span>`:""}</button>`}
+let dbP=null;
+function idb(){if(!dbP)dbP=new Promise((res,rej)=>{try{const r=indexedDB.open("pfr",1);r.onupgradeneeded=()=>r.result.createObjectStore("photos");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}});return dbP}
+async function idbGet(id){try{const db=await idb();return await new Promise(r=>{const q=db.transaction("photos").objectStore("photos").get(id);q.onsuccess=()=>r(q.result||null);q.onerror=()=>r(null)})}catch(e){return null}}
+async function idbSet(id,blob){try{const db=await idb();await new Promise((r,j)=>{const t=db.transaction("photos","readwrite");blob?t.objectStore("photos").put(blob,id):t.objectStore("photos").delete(id);t.oncomplete=r;t.onerror=()=>j(t.error)});return true}catch(e){return false}}
+const repoCache={}, localCache={};
+function repoPhoto(id){if(!(id in repoCache))repoCache[id]=new Promise(r=>{const im=new Image();im.onload=()=>r(im.src);im.onerror=()=>r(null);im.src=`fotos/${id}.jpg`});return repoCache[id]}
+async function photoFor(id){
+  if(!(id in localCache)){const b=await idbGet(id);localCache[id]=b?URL.createObjectURL(b):null}
+  if(localCache[id])return{url:localCache[id],src:"local"};
+  const u=await repoPhoto(id);return u?{url:u,src:"repo"}:null;
+}
+function hydrate(root){
+  root.querySelectorAll("[data-photo]").forEach(async el=>{
+    const p=await photoFor(el.dataset.photo); if(!p)return;
+    const badge=el.querySelector(".badge");
+    el.innerHTML=`<img src="${p.url}" alt="" loading="lazy">`; if(badge)el.appendChild(badge);
+  });
+}
+// reduce la foto del iPhone a ~1200px para que no pese
+function shrink(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file);const im=new Image();
+  im.onload=()=>{const k=Math.min(1,1200/Math.max(im.width,im.height));const c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+    c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(b=>b?res(b):rej(),"image/jpeg",.82)};
+  im.onerror=()=>{URL.revokeObjectURL(u);rej()};im.src=u})}
+let sheetId=null;
+async function openSheet(id){
+  sheetId=id;$("#sh-title").textContent=EQ_NAME[id];$("#sheet").hidden=false;
+  const p=await photoFor(id);
+  $("#sh-photo").innerHTML=p?`<img src="${p.url}" alt="${esc(EQ_NAME[id])}">`:`<div class="ph" style="display:grid;justify-items:center;gap:6px;padding:16px;text-align:center">${CAM.replace("<svg","<svg width=\"40\" height=\"40\"")}<span>Aún no hay foto de este equipo.<br>Tómala en tu club para reconocerlo rápido.</span></div>`;
+  $("#sh-src").textContent=p?(p.src==="local"?"Foto tomada en este teléfono.":"Foto de los clubes Planet Fitness México."):`Archivo en el repositorio: fotos/${id}.jpg`;
+  $("#sh-del").hidden=!(p&&p.src==="local");
+}
+function closeSheet(){$("#sheet").hidden=true;sheetId=null;$("#sh-file").value=""}
+function refreshPhotos(){const v=["routine","club"].find(t=>!$("#v-"+t).hidden);if(v==="routine")renderRoutine();if(v==="club")renderClub()}
+document.addEventListener("click",e=>{const t=e.target.closest("[data-photo]");if(t){e.preventDefault();openSheet(t.dataset.photo)}});
+$("#sh-close").addEventListener("click",closeSheet);
+$("#sheet").addEventListener("click",e=>{if(e.target.id==="sheet")closeSheet()});
+$("#sh-file").addEventListener("change",async e=>{
+  const f=e.target.files[0];if(!f||!sheetId)return;const id=sheetId;
+  try{const b=await shrink(f);if(!(await idbSet(id,b)))throw 0;if(localCache[id])URL.revokeObjectURL(localCache[id]);localCache[id]=URL.createObjectURL(b);toast("Foto guardada");openSheet(id);refreshPhotos()}
+  catch(_){toast("No se pudo guardar la foto. Revisa que Safari no esté en modo privado.")}
+});
+$("#sh-del").addEventListener("click",async()=>{const id=sheetId;await idbSet(id,null);if(localCache[id])URL.revokeObjectURL(localCache[id]);localCache[id]=null;toast("Foto quitada");openSheet(id);refreshPhotos()});
+
 /* ===== Vista: rutina ===== */
 function rx(e){const L=LEVELS[routine.level];return{sets:L.sets,reps:e.c?L.repC:L.repI,rest:e.c?L.rest:Math.max(45,L.rest-15)}}
 function card(it,n,isCardio,idx){
@@ -402,13 +478,13 @@ function card(it,n,isCardio,idx){
   const machines=e.eq.map(id=>EQ_NAME[id]).join(" + ");
   if(isCardio){
     const done=it.done.length>0;
-    return `<article class="ex ${done?"done":""}"><div class="ex-top"><div class="num">${n}</div><div class="ex-title"><h3>${esc(e.n)}</h3><div class="machine">${esc(machines)}</div></div><span class="tag">Cardio</span></div>
+    return `<article class="ex ${done?"done":""}"><div class="ex-top">${thumb(e.eq[0],n)}<div class="ex-title"><h3>${esc(e.n)}</h3><div class="machine">${esc(machines)}</div></div><span class="tag">Cardio</span></div>
     <div class="rx"><span><b>${it.min} min</b> continuos</span></div><div class="tip">${esc(e.tip)}</div>
     <div class="ex-actions"><button class="set" style="width:auto;padding:0 16px;border-radius:999px" data-cdone aria-pressed="${done}">${done?"Completado":"Marcar hecho"}</button><button class="ghost" data-cswap>Otra máquina</button></div></article>`;
   }
   const r=rx(e);
   const allDone=it.done.length>=r.sets;
-  return `<article class="ex ${allDone?"done":""}"><div class="ex-top"><div class="num">${n}</div><div class="ex-title"><h3>${esc(e.n)}</h3><div class="machine">${esc(machines)}</div></div><span class="tag">${GN[it.g]}</span></div>
+  return `<article class="ex ${allDone?"done":""}"><div class="ex-top">${thumb(e.eq[0],n)}<div class="ex-title"><h3>${esc(e.n)}</h3><div class="machine">${esc(machines)}</div></div><span class="tag">${GN[it.g]}</span></div>
   <div class="rx"><span><b>${r.sets}</b> series</span><span><b>${r.reps}</b> reps</span><span><b>${r.rest} s</b> descanso</span></div>
   <div class="tip">${esc(e.tip)}</div>
   <div class="ex-actions"><div class="sets">${Array.from({length:r.sets},(_,s)=>`<button class="set" data-i="${idx}" data-s="${s}" aria-pressed="${it.done.includes(s)}" aria-label="Serie ${s+1}">${s+1}</button>`).join("")}</div><button class="ghost" data-swap="${idx}">Cambiar</button></div></article>`;
@@ -438,6 +514,7 @@ function renderRoutine(){
   if(missing.length) html+=`<div class="note">Sin máquinas disponibles en tu club para: ${missing.map(g=>GN[g]).join(", ")}. Revisa “Mi club”.</div>`;
   html+=`<div class="section row"><button class="ghost" data-regen>Generar otra variante</button><button class="ghost" data-goto="pick">Cambiar grupos</button></div>`;
   body.innerHTML=html;
+  hydrate(body);
 }
 $("#r-body").addEventListener("click",e=>{
   const s=e.target.closest(".set[data-s]");
@@ -461,7 +538,8 @@ $("#t-skip").addEventListener("click",()=>{clearInterval(tInt);$("#timer").hidde
 
 /* ===== Mi club ===== */
 function renderClub(){
-  $("#club").innerHTML=EQUIP.map(c=>`<div class="eqgroup"><div class="eyebrow" style="margin-top:8px">${c.cat}</div>${c.items.map(([id,n,o])=>`<div class="eq"><div><b>${n}</b>${o?`<small>Algunos clubes</small>`:""}</div><button class="switch" role="switch" aria-label="${n}" aria-checked="${!!equip[id]}" data-eq="${id}"></button></div>`).join("")}</div>`).join("");
+  $("#club").innerHTML=EQUIP.map(c=>`<div class="eqgroup"><div class="eyebrow" style="margin-top:8px">${c.cat}</div>${c.items.map(([id,n,o])=>`<div class="eq">${thumb(id)}<div><b>${n}</b>${o?`<small>Algunos clubes</small>`:""}</div><button class="switch" role="switch" aria-label="${n}" aria-checked="${!!equip[id]}" data-eq="${id}"></button></div>`).join("")}</div>`).join("");
+  hydrate($("#club"));
 }
 $("#club").addEventListener("click",e=>{const b=e.target.closest("[data-eq]");if(!b)return;equip[b.dataset.eq]=!equip[b.dataset.eq];store.set("equip",equip);b.setAttribute("aria-checked",equip[b.dataset.eq])});
 $("#resetClub").addEventListener("click",()=>{equip=Object.assign({},EQ_DEFAULT);store.set("equip",{});renderClub();toast("Equipo estándar restablecido")});
