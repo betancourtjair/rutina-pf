@@ -98,8 +98,8 @@ h2{font-size:1.5rem;font-weight:700;text-transform:uppercase}
 .eq .thumb{flex-basis:52px;width:52px;height:52px;border-radius:10px}
 .eq .thumb .ph span{display:none}
 .sheet{position:fixed;inset:0;z-index:20;background:rgb(0 0 0 / .6);display:flex;align-items:flex-end;justify-content:center}
-.sheet-in{background:var(--surface);width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px));display:grid;gap:12px;max-height:92%;overflow:auto}
-.sheet-photo{width:100%;aspect-ratio:4/3;max-width:100%;border-radius:14px;background:var(--surface2);overflow:hidden;display:grid;place-items:center;color:var(--muted)}
+.sheet-in{background:var(--surface);width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px;max-height:92%;overflow:auto}
+.sheet-photo{flex:none;width:100%;aspect-ratio:4/3;max-width:100%;border-radius:14px;background:var(--surface2);overflow:hidden;display:grid;place-items:center;color:var(--muted)}
 .sheet-photo img{width:100%;height:100%;object-fit:contain;background:#000}
 .btn{padding:12px 16px;border-radius:12px;font-weight:700;text-align:center;display:block}
 .btn.primary{background:var(--accent);color:var(--accent-ink)}
@@ -432,6 +432,30 @@ let dbP=null;
 function idb(){if(!dbP)dbP=new Promise((res,rej)=>{try{const r=indexedDB.open("pfr",1);r.onupgradeneeded=()=>r.result.createObjectStore("photos");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}});return dbP}
 async function idbGet(id){try{const db=await idb();return await new Promise(r=>{const q=db.transaction("photos").objectStore("photos").get(id);q.onsuccess=()=>r(q.result||null);q.onerror=()=>r(null)})}catch(e){return null}}
 async function idbSet(id,blob){try{const db=await idb();await new Promise((r,j)=>{const t=db.transaction("photos","readwrite");blob?t.objectStore("photos").put(blob,id):t.objectStore("photos").delete(id);t.oncomplete=r;t.onerror=()=>j(t.error)});return true}catch(e){return false}}
+// Fotos de Planet Fitness (EE.UU.), tomadas del blog oficial planetfitness.com. Mismo tipo de equipo que en los clubes de México.
+const CTF="https://images.ctfassets.net/473zoc40547p/";
+const PF={
+ pec_fly:["5wSteP0LhrTYb3C9X2uAlh/5f2848864fd9d8daffaea08901ee8c2f/PF_Gym_Machine_Workout_Routine.jpg","beginner-basics-30-minute-gym-machine-workout-routine"],
+ chest_press:["7tdRT9jXq1tbm9KmNmF2Y8/6b6d8d58b3a76c715f440b97c5a59e4b/PF_Go-to_Chest_Exercises.jpg","3-go-chest-exercises-beginners"],
+ shoulder_press:["3vCIqekwKsn4F2A44KfP14/50bd3de3214525248994b5c6beda83cb/2_-_Exercise_Tutorial_Shoulder_Press_Machine_360x360.gif","best-shoulder-exercises-for-beginners"],
+ lat_pull:["6K08UDfp9fshisQsqQk30m/45a9e2f761560d6b6f5a6b20a8e9a50b/Exercise_Tutorial_Pulldown_Machine_360x360.gif","forearm-exercises-for-muscle-and-strength"],
+ row:["7mRllAbDywvuPO5IKNoL5q/7849a4399f5dbff87445eedcd9e3e55b/7_-_Exercise_Tutorial_Cable_Row_360x360.gif","best-shoulder-exercises-for-beginners"],
+ assist:["2tOHNS5BGNhSHY3qN1GSwB/dc80f68e9ae424e78ba1bc0bd90fc5dd/2b_-_Best_Bicep_Exercises_Exercise_Tutorial_Pull_Up_-_Assisted_Machine_360x360.gif","forearm-exercises-for-muscle-and-strength"],
+ bicep_curl:["5zygGPO7GiPA4JXl0uUlwa/cf5ef56f5925199d27c55d02b56c31ad/Exercise_Tutorial_Biceps_Curl_Machine_360x360.gif","forearm-exercises-for-muscle-and-strength"],
+ tricep_ext:["40Dx19Jit4FliNL7o6gNfv/e601d30d69fdf2304cbb0dbfee806d30/PF_Triceps_Workouts_-_Triceps_Machine.gif","best-tricep-workouts"],
+ leg_press:["5JbrTLfRxKswsbQmBj0alO/57dc8ab1cd6f54f122ed86bbf96ef32f/1_-_Exercise_Tutorial_Horizontal_Leg_Press_360x360.gif","leg-press-machine-guide"],
+ leg_ext:["2E8ESxQr42TFZVpI0tyENj/2900b613ad7fc192b9729027086bc8d2/Exercise_Tutorials_Leg_Extension_Machine_360x360.gif","ultimate-leg-workouts"],
+ calf:["xdjlfD1rj47edKFjnRztN/0d857a190e3d058b1eb90d0044697dc3/Exercise_Tutorials_Calf_Extension_Machine_360x360.gif","ultimate-leg-workouts"],
+ glute:["OebvZuzXoTaCSvjWtp22x/6d11fecbe2e313e3f88c951bd8eb9e64/Exercise_Tutorials_Glute_Machine_360x360.gif","ultimate-leg-workouts"],
+ captain:["3vlGpuA5THIEzKhjK0RAhD/10fe160ef461f96ea3420b20a9d5bf97/PF_Hanging_Leg_Raise_Machine.jpg","gym-equipment-101-hanging-leg-raise-machine"],
+ smith:["S0faOQlhUWPaKhlD3lRnA/b92aaff03e926098eb5f78715a32cfa0/Exercise_Tutorials_Smith_Machine_Squats_360x360.gif","smith-machine-squats"],
+ cable:["3fL3HOIbwAPXiJK9iXlgJd/8053e194b05d56a34613fdb0041ca027/Exercise_Tutorials_Cable_Hip_Extension_360x360.gif","ultimate-leg-workouts"],
+ bench:["2IGsOGicvkyjaz1tOIMiKE/c530efbd4a0e3dc090853e178014175f/7_-_Best_Bicep_Exercises_Exercise_Tutorial_Incline_Curls_360x360.gif","best-bicep-workouts-for-beginners"],
+ treadmill:["3XvEfdh6iy3IRBSdmIdiq2/dd47fca46dc459e8f423eef9409a835b/PF_Running_Treadmill_Safety_Tips.jpg","running-treadmill-7-safety-tips-keep-mind"],
+ bike:["6GH03vJLZT0zOw9inSkifq/1095c7062bab097528cc091f96db0379/PF_Tired_of_Same_Cardio_Machines.jpg","tired-using-same-cardio-machines-gym-mix-it"],
+ stair:["4E6rZkWux1jzdfT8B4pCKK/4099fb932a0e42cc86bcab5c2843b536/PF_Fun_and_Challenging_Stair_Climber_Workout.jpg","3-little-known-stair-climber-benefits-you-should-definitely-consider"]
+};
+const pfUrl=id=>CTF+PF[id][0]+(PF[id][0].endsWith(".jpg")?"?w=900&fm=jpg&q=75":"");
 // Fotos de referencia (Wikimedia Commons, licencias libres). No son de Planet Fitness: sirven para reconocer el tipo de máquina.
 const WM="https://upload.wikimedia.org/wikipedia/commons/";
 const REF={
@@ -464,6 +488,7 @@ async function photoFor(id){
   if(!(id in localCache)){const b=await idbGet(id);localCache[id]=b?URL.createObjectURL(b):null}
   if(localCache[id])return{url:localCache[id],src:"local"};
   const u=await repoPhoto(id);if(u)return{url:u,src:"repo"};
+  if(PF[id])return{url:pfUrl(id),src:"pf",art:"https://www.planetfitness.com/blog/articles/"+PF[id][1]};
   return REF[id]?{url:WM+REF[id][0],src:"ref",by:REF[id][1],lic:REF[id][2]}:null;
 }
 function hydrate(root){
@@ -483,7 +508,7 @@ async function openSheet(id){
   sheetId=id;$("#sh-title").textContent=EQ_NAME[id];$("#sheet").hidden=false;
   const p=await photoFor(id);
   $("#sh-photo").innerHTML=p?`<img src="${p.url}" alt="${esc(EQ_NAME[id])}">`:`<div class="ph" style="display:grid;justify-items:center;gap:6px;padding:16px;text-align:center">${CAM.replace("<svg","<svg width=\"40\" height=\"40\"")}<span>Aún no hay foto de este equipo.<br>Tómala en tu club para reconocerlo rápido.</span></div>`;
-  $("#sh-src").innerHTML=(p?(p.src==="local"?"Foto tomada en este teléfono.":p.src==="repo"?"Foto de los clubes.":`Foto de referencia de otro gimnasio (${esc(p.by)}, ${esc(p.lic)}, Wikimedia Commons). En tu club puede verse distinta.`):"Aún no hay foto de referencia para este equipo.")+` <a href="${searchUrl(id)}" target="_blank" rel="noopener" style="color:var(--accent);font-weight:700">Ver más fotos de esta máquina</a>`;
+  $("#sh-src").innerHTML=(p?(p.src==="local"?"Foto tomada en este teléfono.":p.src==="repo"?"Foto de los clubes.":p.src==="pf"?`Foto de Planet Fitness EE.UU. (<a href="${p.art}" target="_blank" rel="noopener" style="color:inherit">blog planetfitness.com</a>). En México el equipo es similar.`:`Foto de referencia de otro gimnasio (${esc(p.by)}, ${esc(p.lic)}, Wikimedia Commons). En tu club puede verse distinta.`):"Aún no hay foto de referencia para este equipo.")+` <a href="${searchUrl(id)}" target="_blank" rel="noopener" style="color:var(--accent);font-weight:700">Ver más fotos de esta máquina</a>`;
   $("#sh-del").hidden=!(p&&p.src==="local");
 }
 function closeSheet(){$("#sheet").hidden=true;sheetId=null;$("#sh-file").value=""}
