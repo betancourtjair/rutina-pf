@@ -419,7 +419,7 @@ function swap(idx,isCardio){
 /* ===== Fotos de equipo =====
    Prioridad: 1) foto tomada en este teléfono (IndexedDB)  2) fotos/<id>.jpg en el repositorio  3) marcador */
 const CAM = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>`;
-function thumb(id,n){return `<button class="thumb" data-photo="${id}" aria-label="Ver foto: ${esc(EQ_NAME[id])}"><span class="ph">${CAM}<span>Sin foto</span></span>${n!=null?`<span class="badge">${n}</span>`:""}</button>`}
+function thumb(id,n,ex){return `<button class="thumb" data-photo="${id}"${ex?` data-ex="${esc(ex)}"`:""} aria-label="Ver foto: ${esc(EQ_NAME[id])}"><span class="ph">${CAM}<span>Sin foto</span></span>${n!=null?`<span class="badge">${n}</span>`:""}</button>`}
 let dbP=null;
 function idb(){if(!dbP)dbP=new Promise((res,rej)=>{try{const r=indexedDB.open("pfr",1);r.onupgradeneeded=()=>r.result.createObjectStore("photos");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}});return dbP}
 async function idbGet(id){try{const db=await idb();return await new Promise(r=>{const q=db.transaction("photos").objectStore("photos").get(id);q.onsuccess=()=>r(q.result||null);q.onerror=()=>r(null)})}catch(e){return null}}
@@ -440,8 +440,6 @@ const PF={
  calf:["xdjlfD1rj47edKFjnRztN/0d857a190e3d058b1eb90d0044697dc3/Exercise_Tutorials_Calf_Extension_Machine_360x360.gif","ultimate-leg-workouts"],
  glute:["OebvZuzXoTaCSvjWtp22x/6d11fecbe2e313e3f88c951bd8eb9e64/Exercise_Tutorials_Glute_Machine_360x360.gif","ultimate-leg-workouts"],
  captain:["3vlGpuA5THIEzKhjK0RAhD/10fe160ef461f96ea3420b20a9d5bf97/PF_Hanging_Leg_Raise_Machine.jpg","gym-equipment-101-hanging-leg-raise-machine"],
- smith:["S0faOQlhUWPaKhlD3lRnA/b92aaff03e926098eb5f78715a32cfa0/Exercise_Tutorials_Smith_Machine_Squats_360x360.gif","smith-machine-squats"],
- cable:["3fL3HOIbwAPXiJK9iXlgJd/8053e194b05d56a34613fdb0041ca027/Exercise_Tutorials_Cable_Hip_Extension_360x360.gif","ultimate-leg-workouts"],
  bench:["2IGsOGicvkyjaz1tOIMiKE/c530efbd4a0e3dc090853e178014175f/7_-_Best_Bicep_Exercises_Exercise_Tutorial_Incline_Curls_360x360.gif","best-bicep-workouts-for-beginners"],
  treadmill:["3XvEfdh6iy3IRBSdmIdiq2/dd47fca46dc459e8f423eef9409a835b/PF_Running_Treadmill_Safety_Tips.jpg","running-treadmill-7-safety-tips-keep-mind"],
  bike:["6GH03vJLZT0zOw9inSkifq/1095c7062bab097528cc091f96db0379/PF_Tired_of_Same_Cardio_Machines.jpg","tired-using-same-cardio-machines-gym-mix-it"],
@@ -473,10 +471,13 @@ const REF={
 };
 // búsqueda de imágenes para ver más ejemplos de cada equipo
 const SEARCH={chest_press:"seated chest press machine",pec_fly:"pec deck fly machine",shoulder_press:"shoulder press machine",lat_pull:"lat pulldown machine",row:"seated row machine",assist:"assisted pull up dip machine",bicep_curl:"bicep curl machine",tricep_ext:"triceps extension machine",lat_raise:"lateral raise machine",leg_press:"leg press machine",leg_ext:"leg extension machine",seated_curl:"seated leg curl machine",lying_curl:"lying leg curl machine",abductor:"hip abductor machine",adductor:"hip adductor machine",calf:"calf raise machine",glute:"glute kickback machine",hack:"hack squat machine",ab_crunch:"ab crunch machine",rotary:"rotary torso machine",back_ext:"back extension machine",hyper:"hyperextension bench",captain:"captain's chair knee raise station",smith:"smith machine",cable:"cable crossover machine",db:"dumbbell rack",bench:"adjustable weight bench",fixed_bar:"fixed weight barbell rack",treadmill:"treadmill gym",elliptical:"elliptical machine",bike:"recumbent and upright exercise bike",stair:"stairmaster stepmill",arc:"arc trainer"};
+// Animación de Planet Fitness EE.UU. por ejercicio (blog planetfitness.com)
+const EXG={"Press de banca en Smith": "535QzQlWY4k1MTcSyDblwp/e7819ee8a5fa2e20dd35a341ed6fce54/Exercise_Tutorials_Smith_Machine_Bench_Press_360x360.gif", "Press inclinado en Smith": "535QzQlWY4k1MTcSyDblwp/e7819ee8a5fa2e20dd35a341ed6fce54/Exercise_Tutorials_Smith_Machine_Bench_Press_360x360.gif", "Press plano con mancuernas": "5jS2CW5nHCn0b82zq34eN2/d5103307fb34e496a44eefb08cf88afa/1_-_Strength_Exercises_for_Tennis_Players_Exercise_Tutorial_Dumbbell_Chest_Press_360x360.gif", "Press inclinado con mancuernas": "5jS2CW5nHCn0b82zq34eN2/d5103307fb34e496a44eefb08cf88afa/1_-_Strength_Exercises_for_Tennis_Players_Exercise_Tutorial_Dumbbell_Chest_Press_360x360.gif", "Fondos asistidos": "2tOHNS5BGNhSHY3qN1GSwB/dc80f68e9ae424e78ba1bc0bd90fc5dd/2b_-_Best_Bicep_Exercises_Exercise_Tutorial_Pull_Up_-_Assisted_Machine_360x360.gif", "Jalón al pecho": "6K08UDfp9fshisQsqQk30m/45a9e2f761560d6b6f5a6b20a8e9a50b/Exercise_Tutorial_Pulldown_Machine_360x360.gif", "Remo sentado en máquina": "7mRllAbDywvuPO5IKNoL5q/7849a4399f5dbff87445eedcd9e3e55b/7_-_Exercise_Tutorial_Cable_Row_360x360.gif", "Dominadas asistidas": "2tOHNS5BGNhSHY3qN1GSwB/dc80f68e9ae424e78ba1bc0bd90fc5dd/2b_-_Best_Bicep_Exercises_Exercise_Tutorial_Pull_Up_-_Assisted_Machine_360x360.gif", "Remo en polea baja": "7mRllAbDywvuPO5IKNoL5q/7849a4399f5dbff87445eedcd9e3e55b/7_-_Exercise_Tutorial_Cable_Row_360x360.gif", "Press de hombro en máquina": "3vCIqekwKsn4F2A44KfP14/50bd3de3214525248994b5c6beda83cb/2_-_Exercise_Tutorial_Shoulder_Press_Machine_360x360.gif", "Press militar en Smith": "4Im9b7Ip74hfZ94CXKtKwj/101588b205657627e0ef29cc5eb527d0/3_-_Exercise_Tutorial_Smith_Machine_Shoulder_Press_360x360.gif", "Press con mancuernas sentado": "35zrHuPOfOp5FtSahnrXuz/b66dcbe0747cda4e2e52e096c751d3f5/2_-_Strength_Exercises_for_Tennis_Players_Exercise_Tutorial_Dumbbell_Shoulder_Press_360x360.gif", "Elevaciones laterales con mancuernas": "13j29ZQPIY1NrQcOs2l2cE/ad90039969088479f6b8ebfc89e07bae/8_-_Exercise_Tutorial_Dumbbell_Lateral_Raise_360x360.gif", "Curl de bíceps en máquina": "5zygGPO7GiPA4JXl0uUlwa/cf5ef56f5925199d27c55d02b56c31ad/Exercise_Tutorial_Biceps_Curl_Machine_360x360.gif", "Curl alterno con mancuernas": "1cAVeSTnTKZUuXe80z7RaE/a2d20e2c02e3ffda640da38d6b00143d/Exercise_Tutorial_Alternating_Bicep_Curls_360x360.gif", "Curl martillo": "5PePiHwVMXeZTS8DrXdcYR/02eb104d536e680feab9b90c68d1a33e/Exercise_Tutorial_Alternating_Dumbbell_Hammer_Curl_360x360.gif", "Curl en polea con barra": "2uxZHMRFoaL3JVN5QHG2dA/7f6c03b28bbb4a63f50385fe04290d1c/5_-_Best_Bicep_Exercises_Exercise_Tutorial_Cable_Curls_360x360.gif", "Curl inclinado con mancuernas": "2IGsOGicvkyjaz1tOIMiKE/c530efbd4a0e3dc090853e178014175f/7_-_Best_Bicep_Exercises_Exercise_Tutorial_Incline_Curls_360x360.gif", "Extensión de tríceps en máquina": "40Dx19Jit4FliNL7o6gNfv/e601d30d69fdf2304cbb0dbfee806d30/PF_Triceps_Workouts_-_Triceps_Machine.gif", "Jalón de tríceps con cuerda": "3mQ2TS5KRdEADgQWSiuysp/eb888c055682b7e431b7dcb38f67ceb5/PF_Triceps_Workouts_-_Cable_Pushdown.gif", "Fondos asistidos para tríceps": "2tOHNS5BGNhSHY3qN1GSwB/dc80f68e9ae424e78ba1bc0bd90fc5dd/2b_-_Best_Bicep_Exercises_Exercise_Tutorial_Pull_Up_-_Assisted_Machine_360x360.gif", "Extensión sobre la cabeza con mancuerna": "31MPFtVK1aj14QAPlmG9Kx/df83057001cf9cd7a187f7dd29719a1c/PF_Triceps_Workouts_-_Seated_Triceps_Extension.gif", "Press cerrado en Smith": "535QzQlWY4k1MTcSyDblwp/e7819ee8a5fa2e20dd35a341ed6fce54/Exercise_Tutorials_Smith_Machine_Bench_Press_360x360.gif", "Patada de tríceps en polea": "4cdv6OTi6LydQyb1rrQPCJ/a0494ccd6dd52e269effc8f013487305/PF_Triceps_Workouts_-_Cable_Extension.gif", "Prensa de piernas": "5JbrTLfRxKswsbQmBj0alO/57dc8ab1cd6f54f122ed86bbf96ef32f/1_-_Exercise_Tutorial_Horizontal_Leg_Press_360x360.gif", "Sentadilla en Smith": "S0faOQlhUWPaKhlD3lRnA/b92aaff03e926098eb5f78715a32cfa0/Exercise_Tutorials_Smith_Machine_Squats_360x360.gif", "Extensión de pierna": "2E8ESxQr42TFZVpI0tyENj/2900b613ad7fc192b9729027086bc8d2/Exercise_Tutorials_Leg_Extension_Machine_360x360.gif", "Zancadas con mancuernas": "EaWPAf0uRB8gpRZOZ77GW/5b22ca0819604a39751e71f42c4e4ee5/4_-_Exercise_Tutorial_Lunge_360x360.gif", "Sentadilla búlgara": "EaWPAf0uRB8gpRZOZ77GW/5b22ca0819604a39751e71f42c4e4ee5/4_-_Exercise_Tutorial_Lunge_360x360.gif", "Sentadilla goblet": "6HuRYqxhUkOs2z9FTRsJ9K/0fe722bf8dcd31b8f2fa9931eb1b4e9c/01_-_Strength_and_Cardio_Exercise_Tutorials_Dumbbell_Goblet_Squat_360x360.gif", "Peso muerto rumano con mancuernas": "6ciK23xqyqNbX4gzZ7lihS/47527de9882069bbb75520e14b8ce865/5_-_Exercise_Tutorial_Dumbbell_Deadlift_360x360.gif", "Patada de glúteo en máquina": "OebvZuzXoTaCSvjWtp22x/6d11fecbe2e313e3f88c951bd8eb9e64/Exercise_Tutorials_Glute_Machine_360x360.gif", "Patada de glúteo en polea": "3fL3HOIbwAPXiJK9iXlgJd/8053e194b05d56a34613fdb0041ca027/Exercise_Tutorials_Cable_Hip_Extension_360x360.gif", "Pantorrilla en máquina": "xdjlfD1rj47edKFjnRztN/0d857a190e3d058b1eb90d0044697dc3/Exercise_Tutorials_Calf_Extension_Machine_360x360.gif", "Pantorrilla en prensa": "5JbrTLfRxKswsbQmBj0alO/57dc8ab1cd6f54f122ed86bbf96ef32f/1_-_Exercise_Tutorial_Horizontal_Leg_Press_360x360.gif"};
 const searchUrl=id=>"https://www.google.com/search?tbm=isch&q="+encodeURIComponent((SEARCH[id]||EQ_NAME[id])+" planet fitness");
 const repoCache={}, localCache={};
 function repoPhoto(id){if(!(id in repoCache))repoCache[id]=new Promise(r=>{const im=new Image();im.onload=()=>r(im.src);im.onerror=()=>r(null);im.src=`fotos/${id}.jpg`});return repoCache[id]}
-async function photoFor(id){
+async function photoFor(id,ex){
+  if(ex&&EXG[ex])return{url:CTF+EXG[ex],src:"ex"};
   if(!(id in localCache)){const b=await idbGet(id);localCache[id]=b?URL.createObjectURL(b):null}
   if(localCache[id])return{url:localCache[id],src:"local"};
   const u=await repoPhoto(id);if(u)return{url:u,src:"repo"};
@@ -485,7 +486,7 @@ async function photoFor(id){
 }
 function hydrate(root){
   root.querySelectorAll("[data-photo]").forEach(async el=>{
-    const p=await photoFor(el.dataset.photo); if(!p)return;
+    const p=await photoFor(el.dataset.photo,el.dataset.ex); if(!p)return;
     const badge=el.querySelector(".badge");
     el.innerHTML=`<img src="${p.url}" alt="" loading="lazy">`; if(badge)el.appendChild(badge);
   });
@@ -496,16 +497,16 @@ function shrink(file){return new Promise((res,rej)=>{const u=URL.createObjectURL
     c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(b=>b?res(b):rej(),"image/jpeg",.82)};
   im.onerror=()=>{URL.revokeObjectURL(u);rej()};im.src=u})}
 let sheetId=null;
-async function openSheet(id){
-  sheetId=id;$("#sh-title").textContent=EQ_NAME[id];$("#sheet").hidden=false;
-  const p=await photoFor(id);
+async function openSheet(id,ex){
+  sheetId=id;$("#sh-title").textContent=ex||EQ_NAME[id];$("#sheet").hidden=false;
+  const p=await photoFor(id,ex);
   $("#sh-photo").innerHTML=p?`<img src="${p.url}" alt="${esc(EQ_NAME[id])}">`:`<div class="ph" style="display:grid;justify-items:center;gap:6px;padding:16px;text-align:center">${CAM.replace("<svg","<svg width=\"40\" height=\"40\"")}<span>Aún no hay foto de este equipo.<br>Tómala en tu club para reconocerlo rápido.</span></div>`;
-  $("#sh-src").innerHTML=(p?(p.src==="local"?"Foto tomada en este teléfono.":p.src==="repo"?"Foto de los clubes.":p.src==="pf"?`Foto de Planet Fitness EE.UU. (<a href="${p.art}" target="_blank" rel="noopener" style="color:inherit">blog planetfitness.com</a>). En México el equipo es similar.`:`Foto de referencia de otro gimnasio (${esc(p.by)}, ${esc(p.lic)}, Wikimedia Commons). En tu club puede verse distinta.`):"Aún no hay foto de referencia para este equipo.")+` <a href="${searchUrl(id)}" target="_blank" rel="noopener" style="color:var(--accent);font-weight:700">Ver más fotos de esta máquina</a>`;
+  $("#sh-src").innerHTML=(p?(p.src==="ex"?`Así se hace en Planet Fitness (animación del blog planetfitness.com). Máquina: ${esc(EQ_NAME[id])}.`:p.src==="local"?"Foto tomada en este teléfono.":p.src==="repo"?"Foto de los clubes.":p.src==="pf"?`Foto de Planet Fitness EE.UU. (<a href="${p.art}" target="_blank" rel="noopener" style="color:inherit">blog planetfitness.com</a>). En México el equipo es similar.`:`Foto de referencia de otro gimnasio (${esc(p.by)}, ${esc(p.lic)}, Wikimedia Commons). En tu club puede verse distinta.`):"Aún no hay foto de referencia para este equipo.")+` <a href="${searchUrl(id)}" target="_blank" rel="noopener" style="color:var(--accent);font-weight:700">Ver más fotos de esta máquina</a>`;
   $("#sh-del").hidden=!(p&&p.src==="local");
 }
 function closeSheet(){$("#sheet").hidden=true;sheetId=null;$("#sh-file").value=""}
 function refreshPhotos(){const v=["routine","club"].find(t=>!$("#v-"+t).hidden);if(v==="routine")renderRoutine();if(v==="club")renderClub()}
-document.addEventListener("click",e=>{const t=e.target.closest("[data-photo]");if(t){e.preventDefault();openSheet(t.dataset.photo)}});
+document.addEventListener("click",e=>{const t=e.target.closest("[data-photo]");if(t){e.preventDefault();openSheet(t.dataset.photo,t.dataset.ex)}});
 $("#sh-close").addEventListener("click",closeSheet);
 $("#sheet").addEventListener("click",e=>{if(e.target.id==="sheet")closeSheet()});
 $("#sh-file").addEventListener("change",async e=>{
@@ -522,13 +523,13 @@ function card(it,n,isCardio,idx){
   const machines=e.eq.map(id=>EQ_NAME[id]).join(" + ");
   if(isCardio){
     const done=it.done.length>0;
-    return `<article class="ex ${done?"done":""}"><div class="ex-top">${thumb(e.eq[0],n)}<div class="ex-title"><h3>${esc(e.n)}</h3><div class="machine">${esc(machines)}</div></div><span class="tag">Cardio</span></div>
+    return `<article class="ex ${done?"done":""}"><div class="ex-top">${thumb(e.eq[0],n,e.n)}<div class="ex-title"><h3>${esc(e.n)}</h3><div class="machine">${esc(machines)}</div></div><span class="tag">Cardio</span></div>
     <div class="rx"><span><b>${it.min} min</b> continuos</span></div><div class="tip">${esc(e.tip)}</div>
     <div class="ex-actions"><button class="set" style="width:auto;padding:0 16px;border-radius:999px" data-cdone aria-pressed="${done}">${done?"Completado":"Marcar hecho"}</button><button class="ghost" data-cswap>Otra máquina</button></div></article>`;
   }
   const r=rx(e);
   const allDone=it.done.length>=r.sets;
-  return `<article class="ex ${allDone?"done":""}"><div class="ex-top">${thumb(e.eq[0],n)}<div class="ex-title"><h3>${esc(e.n)}</h3><div class="machine">${esc(machines)}</div></div><span class="tag">${GN[it.g]}</span></div>
+  return `<article class="ex ${allDone?"done":""}"><div class="ex-top">${thumb(e.eq[0],n,e.n)}<div class="ex-title"><h3>${esc(e.n)}</h3><div class="machine">${esc(machines)}</div></div><span class="tag">${GN[it.g]}</span></div>
   <div class="rx"><span><b>${r.sets}</b> series</span><span><b>${r.reps}</b> reps</span><span><b>${r.rest} s</b> descanso</span></div>
   <div class="tip">${esc(e.tip)}</div>
   <div class="ex-actions"><div class="sets">${Array.from({length:r.sets},(_,s)=>`<button class="set" data-i="${idx}" data-s="${s}" aria-pressed="${it.done.includes(s)}" aria-label="Serie ${s+1}">${s+1}</button>`).join("")}</div><button class="ghost" data-swap="${idx}">Cambiar</button></div></article>`;
